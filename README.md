@@ -3,7 +3,7 @@
 
 ## Introduction
 
-Just as with Pandas, another very useful manipulation in SQL is aggregate functions. For example, you may wish to find the mean, median, min or max of a column feature. For example, in the customer relational database that you've been working with, you may wonder if there are differences in overall sales across offices or regions.
+Another very useful tool in SQL is the ability to run aggregate functions. For example, in the customer database below, you might want to look at mean or median sales to compare them across offices or regions.
 
 ## Objectives
 
@@ -35,79 +35,22 @@ cur = conn.cursor()
 
 ## Groupby and Aggregate Functions
 
-Lets start by looking at some groupby statements to aggregate our data.
+Lets start by looking at some `GROUP BY` statements to aggregate our data.
 
 
 ```python
 #Here we join the offices and employees tables in order to count the number of employees per city.
-cur.execute("""select city,
-                      count(employeeNumber)
-                      from offices
-                      join employees
-                      using(officeCode)
-                      group by city
-                      order by count(employeeNumber) desc;""")
+cur.execute("""SELECT city,
+                      COUNT(employeeNumber)
+                      FROM offices
+                      JOIN employees
+                      USING(officeCode)
+                      GROUP BY city
+                      ORDER BY COUNT(employeeNumber) DESC;""")
 df = pd.DataFrame(cur.fetchall())
 df.columns = [x[0] for x in cur.description]
 df.head()
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>city</th>
-      <th>count(employeeNumber)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>San Francisco</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Paris</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Sydney</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Boston</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>London</td>
-      <td>2</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Aliasing
 You can also alias our groupby by specifying the number of our selection order that we want to group by. This is simply written as `group by 1` 1 referring to the first column name that we are selecting.
@@ -116,74 +59,17 @@ Additionally, we can also rename our aggregate to a more descriptive name using 
 
 
 ```python
-cur.execute("""select city,
-                      count(employeeNumber) as numEmployees
-                      from offices
-                      join employees
-                      using(officeCode)
-                      group by 1
-                      order by numEmployees desc;""")
+cur.execute("""SELECT city,
+                      COUNT(employeeNumber) as numEmployees
+                      FROM offices
+                      JOIN employees
+                      USING(officeCode)
+                      GROUP BY 1
+                      ORDER BY numEmployees DESC;""")
 df = pd.DataFrame(cur.fetchall())
 df.columns = [x[0] for x in cur.description]
 df.head()
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>city</th>
-      <th>numEmployees</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>San Francisco</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Paris</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Sydney</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Boston</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>London</td>
-      <td>2</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Other Aggregations
 
@@ -195,192 +81,27 @@ Aside from count() some other useful aggregations include:
 
 
 ```python
-cur.execute("""select customerName,
-                      count(*) as number_purchases,
-                      min(amount) as min_purchase,
-                      max(amount) as max_purchase,
-                      avg(amount) as avg_purchase,
-                      sum(amount) as total_spent
-                      from customers
-                      join payments
-                      using(customerNumber)
-                      group by 1
-                      order by sum(amount) desc;""")
+cur.execute("""SELECT customerName,
+                      COUNT(*) as number_purchases,
+                      MIN(amount) as min_purchase,
+                      MAX(amount) as max_purchase,
+                      AVG(amount) as avg_purchase,
+                      SUM(amount) as total_spent
+                      FROM customers
+                      JOIN payments
+                      USING(customerNumber)
+                      GROUP BY 1
+                      ORDER BY SUM(amount) DESC;""")
 df = pd.DataFrame(cur.fetchall())
 df. columns = [i[0] for i in cur.description]
 print(len(df))
 df.head()
 ```
 
-    98
-
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>customerName</th>
-      <th>number_purchases</th>
-      <th>min_purchase</th>
-      <th>max_purchase</th>
-      <th>avg_purchase</th>
-      <th>total_spent</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Euro+ Shopping Channel</td>
-      <td>13</td>
-      <td>116208.40</td>
-      <td>65071.26</td>
-      <td>55056.844615</td>
-      <td>715738.98</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Mini Gifts Distributors Ltd.</td>
-      <td>9</td>
-      <td>101244.59</td>
-      <td>85410.87</td>
-      <td>64909.804444</td>
-      <td>584188.24</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Australian Collectors, Co.</td>
-      <td>4</td>
-      <td>44894.74</td>
-      <td>82261.22</td>
-      <td>45146.267500</td>
-      <td>180585.07</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Muscle Machine Inc</td>
-      <td>4</td>
-      <td>20314.44</td>
-      <td>58841.35</td>
-      <td>44478.487500</td>
-      <td>177913.95</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Dragon Souveniers, Ltd.</td>
-      <td>4</td>
-      <td>105743.00</td>
-      <td>44380.15</td>
-      <td>39062.757500</td>
-      <td>156251.03</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 
 ```python
 df.tail()
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>customerName</th>
-      <th>number_purchases</th>
-      <th>min_purchase</th>
-      <th>max_purchase</th>
-      <th>avg_purchase</th>
-      <th>total_spent</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>93</th>
-      <td>Royale Belge</td>
-      <td>4</td>
-      <td>1128.20</td>
-      <td>1627.56</td>
-      <td>7304.295000</td>
-      <td>29217.18</td>
-    </tr>
-    <tr>
-      <th>94</th>
-      <td>Frau da Collezione</td>
-      <td>2</td>
-      <td>17746.26</td>
-      <td>7612.06</td>
-      <td>12679.160000</td>
-      <td>25358.32</td>
-    </tr>
-    <tr>
-      <th>95</th>
-      <td>Atelier graphique</td>
-      <td>3</td>
-      <td>14571.44</td>
-      <td>6066.78</td>
-      <td>7438.120000</td>
-      <td>22314.36</td>
-    </tr>
-    <tr>
-      <th>96</th>
-      <td>Auto-Moto Classics Inc.</td>
-      <td>3</td>
-      <td>5858.56</td>
-      <td>9658.74</td>
-      <td>7184.753333</td>
-      <td>21554.26</td>
-    </tr>
-    <tr>
-      <th>97</th>
-      <td>Boards &amp; Toys Co.</td>
-      <td>2</td>
-      <td>3452.75</td>
-      <td>4465.85</td>
-      <td>3959.300000</td>
-      <td>7918.60</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## The having clause
 
@@ -388,61 +109,16 @@ Finally, we can also filter our aggregated views with the having clause. The hav
 
 
 ```python
-cur.execute("""select city,
-                      count(customerNumber) as number_customers
-                      from customers
-                      group by 1
-                      having count(customerNumber)>=5;""")
+cur.execute("""SELECT city,
+                      COUNT(customerNumber) AS number_customers
+                      FROM customers
+                      GROUP BY 1
+                      HAVING COUNT(customerNumber)>=5;""")
 df = pd.DataFrame(cur.fetchall())
 df. columns = [i[0] for i in cur.description]
 print(len(df))
 df.head()
 ```
-
-    2
-
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>city</th>
-      <th>number_customers</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Madrid</td>
-      <td>5</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>NYC</td>
-      <td>5</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 ## Combining the where and having clause
 We can also use the where and having clause in conjunction with each other for more complex rules.
@@ -450,143 +126,26 @@ For example, let's say we want a list of customers who have made at least 3 purc
 
 
 ```python
-cur.execute("""select customerName,
-                      count(amount) as number_purchases_over_50K
-                      from customers
-                      join payments
-                      using(customerNumber)
-                      where amount >= 50000
-                      group by 1
-                      having count(amount) >= 3
-                      order by count(amount) desc;""")
+cur.execute("""SELECT customerName,
+                      COUNT(amount) AS number_purchases_over_50K
+                      FROM customers
+                      JOIN payments
+                      USING(customerNumber)
+                      WHERE amount >= 50000
+                      GROUP BY 1
+                      HAVING COUNT(amount) >= 3
+                      ORDER BY COUNT(amount) DESC;""")
 df = pd.DataFrame(cur.fetchall())
 df. columns = [i[0] for i in cur.description]
 print(len(df))
 df.head()
 ```
 
-    53
-
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>customerName</th>
-      <th>number_purchases_over_50K</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Euro+ Shopping Channel</td>
-      <td>13</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Mini Gifts Distributors Ltd.</td>
-      <td>9</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Anna's Decorations, Ltd</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Australian Collectors, Co.</td>
-      <td>4</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Baane Mini Imports</td>
-      <td>4</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 
 ```python
 df.tail()
 ```
 
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>customerName</th>
-      <th>number_purchases_over_50K</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>48</th>
-      <td>Stylish Desk Decors, Co.</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>49</th>
-      <td>Suominen Souveniers</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>50</th>
-      <td>Toys of Finland, Co.</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>51</th>
-      <td>Toys4GrownUps.com</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>52</th>
-      <td>Vitachrome Inc.</td>
-      <td>3</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
 ## Summary
 
-After this section, you should have a good idea of how to use aggregate functions, aliases and the having clause to filter selections.
+After this section, you should have a good idea of how to use aggregate functions, aliases and the `HAVING` clause to filter selections.
